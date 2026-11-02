@@ -1,0 +1,88 @@
+@import "../../wwwroot/css/Style.scss";
+
+
+#home {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: 1fr;
+    grid-template-areas: "left right";
+    gap: 2rem;
+    padding: 2rem;
+    box-sizing: border-box;
+    min-height: 100vh;
+
+    .left-column {
+        display: grid;
+        grid-template-rows: 1fr 2fr;
+        gap: 1.5rem;
+        min-width: 0;
+        min-height: 0;
+    }
+
+    #nav-options {
+        grid-area: left;
+        gap: 5px;
+        border: 1px dotted pink;
+        @include flexibleBox;
+    }
+
+    #recent-applications {
+        grid-area: right;
+        border: 1px dotted green;
+        padding: 5px;
+        max-height: 90vh;
+        background-color: lightgray;
+
+        #mini-stats {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-evenly;
+            margin: 15px 0px;
+            gap: 5px;
+            font-size:15px;
+        }
+
+        #recent-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow: auto;
+            height: 82vh;
+
+        }
+    }
+
+    #application-stats {
+        grid-area: left;
+        overflow-y: auto;
+        border: 1px dotted blue;
+    }
+}
+
+@media (max-width: 850px) {
+    #home {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto;
+        grid-template-areas: "nav" "recent" "stats";
+        gap: 1.5rem;
+        padding: 1rem;
+
+        .left-column {
+            display: contents;
+        }
+
+        #nav-options {
+            grid-area: nav;
+        }
+
+        #recent-applications {
+            grid-area: recent;
+            overflow-y: visible;
+        }
+
+        #application-stats {
+            grid-area: stats;
+        }
+    }
+}
+

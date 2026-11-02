@@ -1,0 +1,28 @@
+﻿<div id="new_question" class="input-group">
+    <InputText class="form-control"
+               @bind-Value="question"
+               placeholder="Enter a new question..." 
+               @onkeydown="OnKeyDown" />
+    <i role="button" class="bi bi-plus-square input-group-text" @onclick="OnClick_Add" />
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback<string> OnClickAdd { get; set; }
+
+    private string question = "";
+
+    private async Task OnKeyDown(KeyboardEventArgs arg)
+    {
+        if(arg.Code == "Enter")
+        {
+            await OnClick_Add();
+        }
+    }
+
+    private async Task OnClick_Add()
+    {
+        await OnClickAdd.InvokeAsync(question);
+        question = "";
+    }
+}

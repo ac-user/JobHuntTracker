@@ -1,0 +1,85 @@
+﻿@page "/application/{ApplicationId}"
+@using JobHuntTracker.Data
+@using JobHuntTracker.Models
+@attribute [StreamRendering]
+
+
+@if (isLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (JobApplication == null)
+{
+    <b>Huh, something went wrong....</b>
+}
+else
+{
+    <JobHuntTracker.Components.Elements.Tabs ShowOverview="true" @bind-ActiveTab="activeSection" />
+    <div id="job-application">
+        @if (activeSection == overviewTab)
+        {
+            <div id="overview">
+                <h3>@JobApplication.Title</h3>
+                <h4>@JobApplication.Company</h4>
+                <h4>@JobApplication.Salary</h4>
+                <hr/>
+                <p>@((MarkupString)(JobApplication.JobDescription ?? ""))</p>
+            </div>            
+        }
+        else
+        {
+            <i class="bi bi-pencil" @onclick="OnClick_ToggleEditQuestions"/>
+            <JobHuntTracker.Components.Elements.NewQuestion OnClickAdd="OnClick_AddNewQuestion" />
+            <hr />
+            <JobHuntTracker.Components.Elements.Q_A 
+                InterviewQuestions="JobApplication.InterviewQuestions.Where(w => w.Section == activeSection).ToList()" 
+                Editing="isEditingQuestions"/>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string ApplicationId { get; set; }
+
+    /// <summary>
+    /// The page route
+    /// </summary>
+    public const string Route = "/application/";
+
+    private bool isLoading = false;
+    private bool isEditingQuestions = false;
+    private JobApplication JobApplication = new();
+    private const string overviewTab = "Overview";
+    private string activeSection;
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {            
+            JobApplication = DataSource.Get(Guid.Parse(ApplicationId));
+            StateHasChanged();
+        }
+    }
+
+    private void OnClick_ToggleEditQuestions()
+    {
+        isEditingQuestions = !isEditingQuestions;
+    }
+
+    private void OnClick_AddNewQuestion(string newQuestion)
+    {
+        JobApplication.InterviewQuestions.Add(new InterviewQuestion()
+        {
+            Id = Guid.NewGuid(),
+            Position = JobApplication.InterviewQuestions.Max(m => m.Position) + 1,
+            Question = newQuestion,
+            Section = activeSection
+        });
+
+        DataSource.Upsert(JobApplication);
+        newQuestion = "";
+    }
+
+}

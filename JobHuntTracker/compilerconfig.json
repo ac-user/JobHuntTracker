@@ -1,0 +1,30 @@
+﻿[
+  {
+    "outputFile": "Components/Modules/NewApplication.razor.css",
+    "inputFile": "Components/Modules/NewApplication.razor.scss"
+  },
+  {
+    "outputFile": "wwwroot/app.css",
+    "inputFile": "wwwroot/app.scss"
+  },
+  {
+    "outputFile": "Components/Pages/Home.razor.css",
+    "inputFile": "Components/Pages/Home.razor.scss"
+  },
+  {
+    "outputFile": "Components/Pages/DefaultQuestions.razor.css",
+    "inputFile": "Components/Pages/DefaultQuestions.razor.scss"
+  },
+  {
+    "outputFile": "Components/Elements/Tabs.razor.css",
+    "inputFile": "Components/Elements/Tabs.razor.scss"
+  },
+  {
+    "outputFile": "Components/Pages/ApplicationSearch.razor.css",
+    "inputFile": "Components/Pages/ApplicationSearch.razor.scss"
+  },
+  {
+    "outputFile": "Components/Pages/Application.razor.css",
+    "inputFile": "Components/Pages/Application.razor.scss"
+  }
+]

@@ -1,0 +1,44 @@
+﻿
+<ul class="nav nav-tabs">
+    @foreach (var sectionName in sections)
+    {
+        <li class="nav-item @(ActiveTab == sectionName ? "active" : "")"
+            @onclick="@(() => OnClick_Section(sectionName))">@sectionName</li>
+    }
+</ul>
+
+@code {
+    [Parameter]
+    public EventCallback<string> ActiveTabChanged { get; set; }
+    [Parameter]
+    public bool ShowOverview { get; set; }
+    [Parameter]
+    public string ActiveTab { get; set; }
+
+    private List<string> sections = ["Position", "Company"];
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ShowOverview)
+        {
+            sections.Insert(0, "Overview");
+        }
+
+        ActiveTab = sections.First();
+        await ActiveTabChanged.InvokeAsync(ActiveTab);
+    }
+
+    /// <summary>
+    /// Update the tab selection
+    /// </summary>
+    /// <param name="sectionName">new selection</param>
+    /// <returns></returns>
+    private async Task OnClick_Section(string sectionName)
+    {
+        if (sectionName != ActiveTab)
+        {
+            ActiveTab = sectionName;
+            await ActiveTabChanged.InvokeAsync(ActiveTab);
+        }
+    }
+}

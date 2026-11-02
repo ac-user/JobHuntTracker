@@ -1,7 +1,87 @@
 ﻿@page "/"
+@inject NavigationManager Navigation
+@using JobHuntTracker.Data
+@using JobHuntTracker.Models
 
-<PageTitle>Home</PageTitle>
+<div id="home">
+    <div class="left-column">
+        <section id="nav-options">
+            <div class="tile" aria-label="Add job application" @onclick="OnClick_OpenNewApplication">
+                <i class="bi bi-plus"/>
+            </div>
+            <div class="tile" @onclick="() => Navigation.NavigateTo(ApplicationSearch.Route)">
+                <span>Applied Positions</span>
+            </div>
+            <i class="tile" @onclick="() => Navigation.NavigateTo(DefaultQuestions.Route)">
+                <span>Default Questions</span>
+            </i>
+            <i class="tile" @onclick="() => Navigation.NavigateTo(Statistics.Route)">
+                <i class="bi bi-bar-chart" />
+            </i>
+        </section>
 
-<h1>Hello, world!</h1>
 
-Welcome to your new app.
+        @* <section id="application-stats">
+            <b>Nothing here yet...</b>
+        </section> *@
+    </div>
+    <section id="recent-applications">
+        <div id="mini-stats">
+            <span>@applications.Count() Total</span>
+            <span>@applications.Where(w => w.IsActive).Count() Open</span>
+            <span>@applications.Where(w => !w.IsActive).Count() Closed</span>
+        </div>
+        <div id="recent-list">
+            @foreach (var application in applications.OrderByDescending(o => o.LastModified).Take(20))
+            {
+                <div @key="application.Id" class="card" @onclick="() => Navigation.NavigateTo(Application.Route + application.Id)">
+                    <h6>@application.Title</h6>
+                    <span>@application.Company</span>
+                    <span>@application.Salary</span>
+                </div>
+            }
+        </div>
+    </section>
+</div>
+
+<JobHuntTracker.Components.Modules.NewApplication 
+                IsOpen="@showNewApplication"
+                OnSave="OnSave_SaveApplication"
+                OnCancel="OnCancel_CloseNewApplication" />
+
+@code {
+    private bool showNewApplication;
+
+    private List<JobApplication> applications = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            applications = DataSource.Get();
+            StateHasChanged();
+        }
+    }
+
+    private void OnClick_OpenNewApplication()
+    {
+        showNewApplication = true;
+    }
+
+    private void OnCancel_CloseNewApplication()
+    {
+        showNewApplication = false;
+    }
+
+    private Task OnSave_SaveApplication(JobApplication application)
+    {
+        applications.Add(application);
+        DataSource.Create(application);       
+
+        showNewApplication = false;
+
+        return Task.CompletedTask;
+    }
+}
+
+

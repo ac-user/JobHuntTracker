@@ -1,0 +1,18 @@
+
+
+@mixin flexibleBox {
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+@mixin clickable{
+    cursor:pointer;
+}
+
+.card {
+    padding: 5px;
+
+    @include clickable;
+}

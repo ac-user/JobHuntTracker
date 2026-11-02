@@ -1,0 +1,105 @@
+/*.job-modal {
+    // Optional wrapper if you want to scope custom styles.
+    &-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 1055;
+        overflow-y: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+}*/
+
+// Bootstrap modal customizations
+.modal {
+    &.show {
+        display: block;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .modal-dialog {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .modal-content {
+        border: 0;
+        border-radius: 0.75rem;
+        box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+    }
+
+    .modal-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+
+    .modal-title {
+        font-weight: 600;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid var(--bs-border-color);
+
+        .btn {
+            min-width: 100px;
+        }
+    }
+}
+
+// Form styling
+#jobTitle,
+#jobCompany,
+#jobSalary,
+#jobSite,
+#jobRecruiter,
+#jobAgency,
+#jobDescription {
+    &:focus {
+        box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.2);
+    }
+}
+
+#jobDescription {
+    min-height: 180px;
+    max-height:180px;
+    overflow:auto;
+    resize: vertical;
+}
+
+.validation-message {
+    display: block;
+    margin-top: 0.25rem;
+}
+
+// Responsive adjustments
+@media (max-width: 575.98px) {
+    .modal {
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+
+        .modal-header,
+        .modal-body,
+        .modal-footer {
+            padding: 1rem;
+        }
+
+        .modal-footer {
+            .btn {
+                flex: 1;
+            }
+        }
+    }
+}
+
+// Respect users who prefer reduced motion
+@media (prefers-reduced-motion: reduce) {
+    .modal.fade .modal-dialog {
+        transition: none;
+    }
+}

@@ -1,0 +1,42 @@
+﻿@using JobHuntTracker.Models
+
+<section id="interview_questions">
+    @foreach(var question in InterviewQuestions)
+    {
+        <div id="@question.Id" class="">
+            <span>@question.Question</span><br/>            
+            @if(Editing)
+            {
+                <InputTextArea class="form-control"
+                               @bind-Value="question.Answer"
+                               @bind-Value:event="oninput"
+                               placeholder="Enter your answer..." />
+            }
+            else
+            {
+                <p>@question.Answer</p>   
+            }
+            
+        </div>
+    }
+</section>
+
+@code {
+    /// <summary>
+    /// Are we answering the questions 
+    /// </summary>
+    [Parameter]
+    public bool Editing { get; set; }
+
+    /// <summary>
+    /// Are these the default list of questions being modified?
+    /// </summary>
+    [Parameter]
+    public bool AreDefaultQuestions { get; set; }
+
+    /// <summary>
+    /// The interview questions
+    /// </summary>
+    [Parameter]
+    public List<InterviewQuestion> InterviewQuestions { get; set; }
+}

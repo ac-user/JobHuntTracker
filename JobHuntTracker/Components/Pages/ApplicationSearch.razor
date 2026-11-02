@@ -1,0 +1,64 @@
+﻿@page "/applications"
+@inject NavigationManager Navigation
+@using JobHuntTracker.Data
+@using JobHuntTracker.Models
+@using BlazorExpress.ChartJS
+@using NodaTime
+<h3>Applications</h3>
+
+<div id="application-master-list" class="d-flex flex-column">
+    <Grid TItem="JobApplication"
+          Class="table table-hover table-bordered table-striped"
+          DataProvider="DataProvider"
+          OnRowClick="OnRowClick"
+          AllowPaging="true"
+          AllowSorting="true"
+          AllowRowClick="true"
+          PageSize="15"
+          Responsive="true">
+        
+        <GridColumns>
+            <GridColumn TItem="JobApplication" Sortable="true" HeaderText="Title">@context.Title</GridColumn>
+            <GridColumn TItem="JobApplication" Sortable="true" HeaderText="Company">@context.Company</GridColumn>
+            <GridColumn TItem="JobApplication" Sortable="true" HeaderText="Salary">@context.Salary</GridColumn>
+            <GridColumn TItem="JobApplication" Sortable="true" HeaderText="Applied">@(GetDate(context.AppliedDate))</GridColumn>
+            <GridColumn TItem="JobApplication" Sortable="true" HeaderText="Open">@context.IsActive</GridColumn>
+        </GridColumns>
+    </Grid>
+</div>
+
+
+@code {
+
+    /// <summary>
+    /// The page route
+    /// </summary>
+    public const string Route = "/applications";
+
+    private List<JobApplication> applications;
+
+    private async Task<GridDataProviderResult<JobApplication>> DataProvider(GridDataProviderRequest<JobApplication> request)
+    {
+        if (applications is null) // pull employees only one time for client-side filtering, sorting, and paging
+            applications = DataSource.Get().OrderByDescending(o => o.LastModified).ToList(); // call a service or an API to pull the employees
+
+        return await Task.FromResult(request.ApplyTo(applications));
+    }
+
+    private async Task OnRowClick(GridRowEventArgs<JobApplication> args)
+    {
+        var application = args.Item;
+        Navigation.NavigateTo(Application.Route + application.Id);
+    }
+
+    private string GetDate(DateTimeOffset appliedDate)
+    {
+        Period period = Period.Between(ZonedDateTime.FromDateTimeOffset(appliedDate).LocalDateTime,
+                                       ZonedDateTime.FromDateTimeOffset(DateTimeOffset.Now).LocalDateTime,
+                                       PeriodUnits.Years | PeriodUnits.Months | PeriodUnits.Days);
+
+        if (period.Years > 0) return $"{period.Years} years ago";
+        if (period.Months > 0) return $"{period.Months} months ago";
+        return $"{period.Days} days ago";
+    }
+}

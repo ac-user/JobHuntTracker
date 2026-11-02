@@ -1,0 +1,227 @@
+﻿@inject IJSRuntime JS
+@using JobHuntTracker.Data
+@using JobHuntTracker.Models
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+
+@if (IsOpen)
+{
+    <div class="modal fade show d-block"
+         tabindex="-1"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="jobModalTitle"
+         aria-describedby="jobModalDescription">
+
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg"
+             role="document">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title" id="jobModalTitle">
+                            New Job Application
+                        </h5>
+                        <p class="text-body-secondary small mb-0" id="jobModalDescription">
+                            Enter the details for the job you applied to.
+                        </p>
+                    </div>
+
+                    <button type="button"
+                            class="btn-close"
+                            aria-label="Close"
+                            @onclick="Cancel">
+                    </button>
+                </div>
+
+                <EditForm Model="@application" OnValidSubmit="Save">
+                    <DataAnnotationsValidator />
+
+                    <div class="modal-body">
+                        <div class="row g-3">
+
+                            <div class="col-12 col-md-6">
+                                <label for="jobTitle" class="form-label">
+                                    Title <span class="text-danger">*</span>
+                                </label>
+                                <InputText id="jobTitle"
+                                           class="form-control"
+                                           @bind-Value="application.Title"
+                                           placeholder="Job title"
+                                           required
+                                           aria-required="true" />
+                                <ValidationMessage For="@(() => application.Title)"
+                                                   class="text-danger small" />
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label for="jobCompany" class="form-label">
+                                    Company
+                                </label>
+                                <InputText id="jobCompany"
+                                           class="form-control"
+                                           @bind-Value="application.Company"
+                                           placeholder="Company name" />
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label for="jobLocation" class="form-label">
+                                    Location
+                                </label>
+                                <InputText id="jobLocation"
+                                           class="form-control"
+                                           @bind-Value="application.Location"
+                                           placeholder="Company location" />
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label for="jobSalary" class="form-label">
+                                    Salary
+                                </label>
+                                <InputText id="jobSalary"
+                                           class="form-control"
+                                           @bind-Value="application.Salary"
+                                           placeholder="e.g. $80,000–$100,000" />
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label for="jobSite" class="form-label">
+                                    Site Applied
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <InputText id="jobSite"
+                                           class="form-control"
+                                           @bind-Value="application.SiteApplied"
+                                           placeholder="e.g. LinkedIn"
+                                           required
+                                           aria-required="true" />
+                                <ValidationMessage For="@(() => application.SiteApplied)"
+                                                   class="text-danger small" />
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label for="jobRecruiter" class="form-label">
+                                    Recruiter
+                                </label>
+                                <InputText id="jobRecruiter"
+                                           class="form-control"
+                                           @bind-Value="application.Recruiter"
+                                           placeholder="Recruiter name" />
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label for="jobAgency" class="form-label">
+                                    Recruiter Agency
+                                </label>
+                                <InputText id="jobAgency"
+                                           class="form-control"
+                                           @bind-Value="application.RecruiterAgency"
+                                           placeholder="Agency name" />
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label" for="jobDescription">
+                                    Job Description
+                                    <span class="text-danger">*</span>
+                                </label>
+
+                                <div id="jobDescription"
+                                     class="form-control rich-text-editor"
+                                     contenteditable="true"
+                                     @oninput="OnJobDescriptionInput">
+                                    @((MarkupString)(application.JobDescription ?? ""))
+                                </div>
+
+                                <ValidationMessage For="@(() => application.JobDescription)"
+                                                   class="text-danger small" />
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                @onclick="Cancel">
+                            Cancel
+                        </button>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1" aria-hidden="true"></i>
+                            Save Application
+                        </button>
+                    </div>
+                </EditForm>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    [Parameter]
+    public EventCallback<JobApplication> OnSave { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private IJSObjectReference? module;
+    private JobApplication application = new();
+    private bool wasOpen;
+
+    protected override void OnParametersSet()
+    {
+        // Start with a fresh model each time the modal opens.
+        if (IsOpen && !wasOpen)
+        {
+            application = new JobApplication
+            {
+                IsActive = true
+            };
+        }
+
+        wasOpen = IsOpen;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "./Components/Modules/NewApplication.razor.js");
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    } 
+
+    private async Task OnJobDescriptionInput(ChangeEventArgs e)
+    {
+        application.JobDescription = await JS.InvokeAsync<string>("getEditorHtml", "jobDescription");
+    }
+
+    /// <summary>
+    /// SAving the new application data
+    /// </summary>
+    /// <returns></returns>
+    private async Task Save()
+    {
+        var now = DateTimeOffset.Now;
+
+        application.Id = Guid.NewGuid();
+        application.AppliedDate = now;
+        application.LastModified = now;
+        application.IsRemote = true;
+        application.InterviewQuestions = DataSource.GetDefaultQuestions();
+
+        await OnSave.InvokeAsync(application);
+    }
+
+    private async Task Cancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+}

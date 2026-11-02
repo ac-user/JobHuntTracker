@@ -1,0 +1,1 @@
+﻿.card{padding:5px;cursor:pointer;}#default-questions{padding:5px;}#default-questions #question-list{padding:5px;display:flex;flex-direction:column;gap:15px;}#default-questions #question-list .bi-grip-vertical{cursor:grab;}#default-questions #question-list .bi-grip-vertical:active{cursor:grabbing;}
