@@ -1,0 +1,64 @@
+﻿@using JobHuntTracker.Data
+
+<PieChart @ref="pieChart"/>
+
+@code {
+    private PieChart pieChart = default!;
+    private PieChartOptions pieChartOptions = default!;
+    private ChartData chartData = default!;
+    private ChartClickEventArgs? selectedChartItem;
+
+    protected override void OnInitialized()
+    {
+        pieChartOptions = new PieChartOptions 
+        { 
+            Responsive = true,
+            MaintainAspectRatio = true
+        };
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            chartData = GetChartData();
+            await pieChart.InitializeAsync(chartData, pieChartOptions);
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    /// <summary>
+    /// Get the chart data based on the applications
+    /// </summary>
+    /// <returns>chart specific data</returns>
+    private ChartData GetChartData()
+    {
+        var applications = DataSource.Get().Where(w => !String.IsNullOrWhiteSpace(w.Step));
+        foreach (var item in applications)
+        {
+            item.SiteApplied = item.SiteApplied?.Trim().ToLowerInvariant() switch
+            {
+                "indeed" => "Indeed",
+                "linkedin" => "LinkedIn",
+                _ => "Other"
+            };
+        }
+
+        var datasets = new List<IChartDataset>();
+        var colors = BlazorExpress.ChartJS.ColorUtility.CategoricalTwelveColors;
+        var labels = applications.Select(s => s.SiteApplied).Distinct().ToList();
+
+        datasets.Add(new PieChartDataset()
+        {
+            Data = new List<double?>
+            {
+                applications.Where(w => w.SiteApplied == labels[0]).Count(),
+                applications.Where(w => w.SiteApplied == labels[1]).Count(),
+                0//applications.Where(w => w.SiteApplied == labels[2]).Count()
+            },
+            BackgroundColor = new List<string> { colors[0], colors[1], colors[2] },
+        });
+
+        return new ChartData { Labels = labels, Datasets = datasets };
+    }
+}

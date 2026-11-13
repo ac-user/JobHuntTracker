@@ -1,10 +1,24 @@
-﻿.card {
+﻿::deep .card {
   padding: 5px;
   cursor: pointer;
+}
+::deep .card:hover {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #00B3B3;
 }
 
 html, body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+main {
+  /* Modern standard approach (Chrome, Firefox, Edge, Safari) */
+  scrollbar-width: none;
+  /* Legacy WebKit browsers (older Chrome, Safari, Opera) */
+  /* Legacy Internet Explorer and Old Edge */
+  -ms-overflow-style: none;
+}
+main::-webkit-scrollbar {
+  display: none;
 }
 
 a, .btn-link {
@@ -13,8 +27,11 @@ a, .btn-link {
 
 .btn-primary {
   color: #fff;
-  background-color: #1b6ec2;
+  background-color: #009999;
   border-color: #1861ac;
+}
+.btn-primary:hover {
+  background-color: #00B3B3;
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
@@ -23,6 +40,30 @@ a, .btn-link {
 
 .content {
   padding-top: 1.1rem;
+}
+
+.header-bar {
+  background-color: #009999;
+  height: 50px;
+  width: 100%;
+  display: flex;
+  padding: 0px 15px;
+  align-content: center;
+  align-items: center;
+  color: white;
+}
+.header-bar .left {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 18px;
+  cursor: pointer;
+}
+.header-bar .left:hover {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #00B3B3;
+}
+.header-bar .left .bi-house {
+  font-size: 25px;
 }
 
 h1:focus {
@@ -62,9 +103,12 @@ h1:focus {
   align-items: center;
   justify-content: center;
   text-align: center;
-  border: 1px solid black;
+  border: 1px solid #009999;
   border-radius: 10px;
   cursor: pointer;
+}
+.tile:hover {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #00B3B3;
 }
 .tile span {
   font-size: clamp(0.75rem, 85%, 1rem);

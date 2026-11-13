@@ -1,7 +1,14 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
 
 <div class="page">
     <main>
+        <div class="header-bar">
+            <div class="left" @onclick="() => Navigation.NavigateTo(Pages.Home.Route)" tabindex="1">
+                <i class="bi-house"/>
+                <span>Job Tracker</span>
+            </div>
+        </div>
         <article class="content px-4">
             @Body
         </article>

@@ -1,6 +1,6 @@
 ﻿@using JobHuntTracker.Models
 
-<section id="interview_questions">
+<section id="interview-questions">
     @foreach(var question in InterviewQuestions)
     {
         <div id="@question.Id" class="">
@@ -9,7 +9,7 @@
             {
                 <InputTextArea class="form-control"
                                @bind-Value="question.Answer"
-                               @bind-Value:event="oninput"
+                               @onblur="OnBlur"
                                placeholder="Enter your answer..." />
             }
             else
@@ -39,4 +39,10 @@
     /// </summary>
     [Parameter]
     public List<InterviewQuestion> InterviewQuestions { get; set; }
+
+    /// <summary>
+    /// Event to fire when leaving input field
+    /// </summary>
+    [Parameter]
+    public EventCallback OnBlur { get; set; }
 }

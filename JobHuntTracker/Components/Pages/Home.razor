@@ -4,43 +4,55 @@
 @using JobHuntTracker.Models
 
 <div id="home">
-    <div class="left-column">
-        <section id="nav-options">
-            <div class="tile" aria-label="Add job application" @onclick="OnClick_OpenNewApplication">
-                <i class="bi bi-plus"/>
-            </div>
-            <div class="tile" @onclick="() => Navigation.NavigateTo(ApplicationSearch.Route)">
-                <span>Applied Positions</span>
-            </div>
-            <i class="tile" @onclick="() => Navigation.NavigateTo(DefaultQuestions.Route)">
-                <span>Default Questions</span>
-            </i>
-            <i class="tile" @onclick="() => Navigation.NavigateTo(Statistics.Route)">
-                <i class="bi bi-bar-chart" />
-            </i>
-        </section>
+    <section id="header">
+       <h3>Welcome</h3>
+       <p>Find all your job tracking needs here!</p>
+    </section>
+    <section id="nav-options">
+        <Button Class="tile" @onclick="OnClick_OpenNewApplication" tabindex="2" aria-label="Add job application">
+            <i class="bi bi-plus"/>
+        </Button>
+        <Button Class="tile" @onclick="() => Navigation.NavigateTo(ApplicationSearch.Route)" tabindex="3" aria-label="All applications">
+            <span>Applied Post's</span>
+        </Button>
+        <Button Class="tile" @onclick="() => Navigation.NavigateTo(DefaultQuestions.Route)" tabindex="4" aria-label="Default questions">
+            <span>Default Questions</span>
+        </Button>
+        <Button Class="tile" @onclick="() => Navigation.NavigateTo(Statistics.Route)" tabindex="5" aria-label="Statistics">
+            <i class="bi bi-bar-chart" />
+        </Button>
+    </section>
 
-
-        @* <section id="application-stats">
-            <b>Nothing here yet...</b>
-        </section> *@
-    </div>
     <section id="recent-applications">
         <div id="mini-stats">
             <span>@applications.Count() Total</span>
             <span>@applications.Where(w => w.IsActive).Count() Open</span>
             <span>@applications.Where(w => !w.IsActive).Count() Closed</span>
         </div>
-        <div id="recent-list">
-            @foreach (var application in applications.OrderByDescending(o => o.LastModified).Take(20))
+        <div id="recent-list" tabindex="7">
+            @foreach (var application in applications.Where(w => w.IsActive).OrderByDescending(o => o.LastModified).Take(20))
             {
-                <div @key="application.Id" class="card" @onclick="() => Navigation.NavigateTo(Application.Route + application.Id)">
-                    <h6>@application.Title</h6>
-                    <span>@application.Company</span>
-                    <span>@application.Salary</span>
-                </div>
+                <Card @key="application.Id" @onclick="() => Navigation.NavigateTo(Application.Route + application.Id)">
+                    <CardBody>
+                        <CardTitle>@application.Title</CardTitle>
+                        <span class="company">@application.Company</span>
+                        <span class="salary">@application.Salary</span>
+                        <div class="status">@(GetStatus(application))</div>
+                    </CardBody>
+                </Card>
             }
         </div>
+    </section>
+
+    <section id="application-stats">
+        <Carousel Autoplay="CarouselAutoPlay.StartOnPageLoad" tabindex="6">
+            <CarouselItem Active="true">
+                <JobHuntTracker.Components.Elements.RecruitementSite/>
+            </CarouselItem>
+            <CarouselItem>
+                <JobHuntTracker.Components.Elements.ApplicationsByDate Interactive="false"/>
+            </CarouselItem>
+        </Carousel>
     </section>
 </div>
 
@@ -50,6 +62,11 @@
                 OnCancel="OnCancel_CloseNewApplication" />
 
 @code {
+    /// <summary>
+    /// The page route
+    /// </summary>
+    public const string Route = "/";
+
     private bool showNewApplication;
 
     private List<JobApplication> applications = new();
@@ -63,16 +80,38 @@
         }
     }
 
+    /// <summary>
+    ///  Get the status of the application
+    /// </summary>
+    /// <param name="jobApplication">application</param>
+    /// <returns>current interview process status</returns>
+    private string GetStatus(JobApplication jobApplication)
+    {
+        if (!jobApplication.IsActive) return "Closed";
+        if (!String.IsNullOrWhiteSpace(jobApplication.Step)) return "Interviewing";
+        return "Submitted";
+    }
+
+    /// <summary>
+    /// Display the new job application modal
+    /// </summary>
     private void OnClick_OpenNewApplication()
     {
         showNewApplication = true;
     }
 
+    /// <summary>
+    /// Close the job application modal
+    /// </summary>
     private void OnCancel_CloseNewApplication()
     {
         showNewApplication = false;
     }
 
+    /// <summary>
+    /// Save a new job application
+    /// </summary>
+    /// <param name="application">application to save</param>
     private Task OnSave_SaveApplication(JobApplication application)
     {
         applications.Add(application);

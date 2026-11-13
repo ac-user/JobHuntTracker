@@ -1,13 +1,14 @@
 @import "../../wwwroot/css/Style.scss";
+@import "../../wwwroot/css/Variables.scss";
 
-#application-master-list{
-    display:flex;
-    flex-direction:row;
-    flex-wrap:wrap;
-    gap:15px;
+#application-master-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: $gap-large;
 
-    .card{
-        height:100px;
-        width:250px;
+    .card {
+        height: 100px;
+        width: 250px;
     }
 }

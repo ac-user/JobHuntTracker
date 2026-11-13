@@ -1,4 +1,29 @@
+@import "../../wwwroot/css/Variables.scss";
 
 #job-application {
     padding: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: $gap-small;
+
+    .bi-pencil {
+        margin-left: auto;
+    }
+
+    #overview {
+
+        ::deep button {
+            width: 100%;
+        }
+    }
+
+    ::deep #interview-questions {
+        div {
+            margin-bottom: 15px;
+
+            span {
+                font-weight: 550;
+            }
+        }
+    }
 }

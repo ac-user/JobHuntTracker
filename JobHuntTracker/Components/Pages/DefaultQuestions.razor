@@ -6,27 +6,24 @@
 <section id="default-questions">
     <JobHuntTracker.Components.Elements.NewQuestion OnClickAdd="OnClick_AddNewQuestion"/>
     <hr/>
-    <div id="question-list">
-        @foreach (var question in DeafultInterviewQuestions.Where(w => w.Section == activeSection)
-                                                           .OrderBy(o => o.Position))
-        {
-            <div @key="question.Id"
-                 id="@question.Id"
-                 class="input-group">
-                <div class="bi bi-grip-vertical input-group-text"
-                     draggable="true"
-                     @ondragstart="() => OnDragStart(question)"
-                     @ondragover:preventDefault
-                     @ondrop="() => OnDrop(question)" />
-                <InputText class="form-control"
-                           @bind-Value="question.Question"
-                           readonly="@(editingQuestionId != question.Id)"
-                           @ondblclick="() => OnDblClick_BeginEdit(question)"
-                           @onblur="() => OnBlur_SaveQuestion(question)" />
-                <i role="button" class="bi bi-x-square input-group-text" @onclick="() => OnClick_DeleteQuestion(question)" />
-            </div>
-        }
-    </div>
+    <SortableList Id="list"
+                  Handle=".bi-grip-vertical"
+                  TItem="InterviewQuestion"
+                  Data="DeafultInterviewQuestions.Where(w => w.Section == activeSection).OrderBy(o => o.Position).ToList()"
+                  Context="item"
+                  OnUpdate="OnListUpdate">
+                  <ItemTemplate>
+                        <div @key="item.Id" id="@item.Id" class="input-group">
+                            <div class="bi bi-grip-vertical input-group-text"/>
+                            <InputText class="form-control"
+                                       @bind-Value="item.Question"
+                                       readonly="@(editingQuestionId != item.Id)"
+                                       @ondblclick="() => OnDblClick_BeginEdit(item)"
+                                       @onblur="() => OnBlur_SaveQuestion(item)" />
+                            <i role="button" class="bi bi-x-square input-group-text" @onclick="() => OnClick_DeleteQuestion(item)" />
+                        </div>
+                  </ItemTemplate>
+    </SortableList>    
 </section>
 
 @code {
@@ -53,6 +50,10 @@
         }
     }
 
+    /// <summary>
+    /// Add new default question to interview questions
+    /// </summary>
+    /// <param name="newQuestion">new question</param>
     private void OnClick_AddNewQuestion(string newQuestion)
     {
         DeafultInterviewQuestions.Add(new InterviewQuestion()
@@ -67,10 +68,20 @@
         newQuestion = "";
     }
 
-    // Delete a question when the X button is clicked.
+    /// <summary>
+    /// Delete a default interview question
+    /// </summary>
+    /// <param name="question">question to be deleted</param>
     private void OnClick_DeleteQuestion(InterviewQuestion question)
     {
+        int position = 0;
         DeafultInterviewQuestions.Remove(question);
+        foreach (var sectionItem in DeafultInterviewQuestions.Where(w => w.Section == activeSection)
+                                                             .OrderBy(o => o.Position))
+        {
+            sectionItem.Position = position;
+            position++;
+        }
 
         if (editingQuestionId == question.Id)
             editingQuestionId = null;
@@ -78,53 +89,39 @@
         if (draggedQuestionId == question.Id)
             draggedQuestionId = null;
 
-        UpdatePositions();
+        DataSource.Upsert(DeafultInterviewQuestions);
     }
 
-    // Enable editing on double-click.
+    /// <summary>
+    /// Enable editing on interview question
+    /// </summary>
+    /// <param name="question">question to enable editing on</param>
     private void OnDblClick_BeginEdit(InterviewQuestion question)
     {
         editingQuestionId = question.Id;
     }
 
-    // Record the question being dragged.
-    private void OnDragStart(InterviewQuestion question)
+    /// <summary>
+    /// Update position of questions
+    /// </summary>
+    /// <param name="args">sortable list elements information</param>
+    private void OnListUpdate(SortableListEventArgs args)
     {
-        draggedQuestionId = question.Id;
-    }
-
-    // Move the dragged question to the target question's position.
-    private void OnDrop(InterviewQuestion targetQuestion)
-    {
-        if (draggedQuestionId is null ||
-        draggedQuestionId == targetQuestion.Id)
-        {
-            draggedQuestionId = null;
+        if (args.OldIndex == args.NewIndex)
             return;
-        }
 
-        var draggedQuestion = DeafultInterviewQuestions
-            .FirstOrDefault(q => q.Id == draggedQuestionId.Value);
-
-        if (draggedQuestion is null)
-        {
-            draggedQuestionId = null;
-            return;
-        }
-
-        // Capture the target position before modifying either question.
-        int targetPosition = targetQuestion.Position;
-        int draggedPosition = draggedQuestion.Position;
+        var items = DeafultInterviewQuestions.Where(w => w.Section == activeSection).OrderBy(o => o.Position).ToList();
+        var itemToMove = items[args.OldIndex];
 
         // Move the dragged question to the target position.
-        if (draggedPosition < targetPosition)
+        if (args.OldIndex < args.NewIndex)
         {
             // Moving down: shift intervening questions up.
-            foreach (var question in DeafultInterviewQuestions.Where(w => w.Section == activeSection))
+            foreach (var question in items)
             {
-                if (question.Id != draggedQuestion.Id &&
-                    question.Position > draggedPosition &&
-                    question.Position <= targetPosition)
+                if (question.Id != itemToMove.Id &&
+                    question.Position > args.OldIndex &&
+                    question.Position <= args.NewIndex)
                 {
                     question.Position--;
                 }
@@ -135,23 +132,23 @@
             // Moving up: shift intervening questions down.
             foreach (var question in DeafultInterviewQuestions.Where(w => w.Section == activeSection))
             {
-                if (question.Id != draggedQuestion.Id &&
-                    question.Position >= targetPosition &&
-                    question.Position < draggedPosition)
+                if (question.Id != itemToMove.Id &&
+                    question.Position >= args.NewIndex &&
+                    question.Position < args.OldIndex)
                 {
                     question.Position++;
                 }
             }
         }
 
-        draggedQuestion.Position = targetPosition;
-
-        UpdatePositions();
-
-        draggedQuestionId = null;
+        itemToMove.Position = args.NewIndex;
+        DataSource.Upsert(DeafultInterviewQuestions);
     }
 
-    // Save the edited question when the input loses focus.
+    /// <summary>
+    /// Save the edited question
+    /// </summary>
+    /// <param name="question">default questions information</param>
     private void OnBlur_SaveQuestion(InterviewQuestion question)
     {
         if (editingQuestionId != question.Id)
@@ -161,34 +158,12 @@
 
         if (string.IsNullOrWhiteSpace(question.Question))
         {
-            DeafultInterviewQuestions.Remove(question);
-            UpdatePositions();
+            OnClick_DeleteQuestion(question);
         }
         else
         {
             DataSource.Upsert(DeafultInterviewQuestions);
+            editingQuestionId = null;            
         }
-
-        editingQuestionId = null;
-    }
-    
-    private void OnTabClick_UpdateSection(string sectionName)
-    {
-        activeSection = sectionName;
-    }
-    
-    // Keep Position values aligned with the displayed order.
-    private void UpdatePositions()
-    {
-        var orderedQuestions = DeafultInterviewQuestions.Where(w => w.Section == activeSection)
-                                                        .OrderBy(q => q.Position)
-                                                        .ToList();
-
-        for (int i = 0; i < orderedQuestions.Count; i++)
-        {
-            orderedQuestions[i].Position = i;
-        }
-
-        DataSource.Upsert(DeafultInterviewQuestions);
-    }
+    }      
 }

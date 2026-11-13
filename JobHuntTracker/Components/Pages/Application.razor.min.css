@@ -1,1 +1,1 @@
-﻿#job-application{padding:5px;}
+﻿#job-application{padding:5px;display:flex;flex-direction:column;gap:5px;}#job-application .bi-pencil{margin-left:auto;}#job-application #overview ::deep button{width:100%;}#job-application ::deep #interview-questions div{margin-bottom:15px;}#job-application ::deep #interview-questions div span{font-weight:550;}

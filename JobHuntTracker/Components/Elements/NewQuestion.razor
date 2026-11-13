@@ -7,11 +7,18 @@
 </div>
 
 @code {
+    /// <summary>
+    /// Event to fire when Add is clicked
+    /// </summary>
     [Parameter]
     public EventCallback<string> OnClickAdd { get; set; }
 
     private string question = "";
 
+    /// <summary>
+    /// Add new question on Enter
+    /// </summary>
+    /// <param name="arg">Key pressed</param>
     private async Task OnKeyDown(KeyboardEventArgs arg)
     {
         if(arg.Code == "Enter")
@@ -20,6 +27,9 @@
         }
     }
 
+    /// <summary>
+    /// Handle user clicked Add 
+    /// </summary>
     private async Task OnClick_Add()
     {
         await OnClickAdd.InvokeAsync(question);

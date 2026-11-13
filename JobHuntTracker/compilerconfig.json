@@ -26,5 +26,9 @@
   {
     "outputFile": "Components/Pages/Application.razor.css",
     "inputFile": "Components/Pages/Application.razor.scss"
+  },
+  {
+    "outputFile": "Components/Pages/Statistics.razor.css",
+    "inputFile": "Components/Pages/Statistics.razor.scss"
   }
 ]

@@ -6,7 +6,7 @@
 @using NodaTime
 <h3>Applications</h3>
 
-<div id="application-master-list" class="d-flex flex-column">
+<div id="application-master-list" class="d-flex flex-column" tabindex="2">
     <Grid TItem="JobApplication"
           Class="table table-hover table-bordered table-striped"
           DataProvider="DataProvider"
@@ -22,7 +22,7 @@
             <GridColumn TItem="JobApplication" Sortable="true" HeaderText="Company">@context.Company</GridColumn>
             <GridColumn TItem="JobApplication" Sortable="true" HeaderText="Salary">@context.Salary</GridColumn>
             <GridColumn TItem="JobApplication" Sortable="true" HeaderText="Applied">@(GetDate(context.AppliedDate))</GridColumn>
-            <GridColumn TItem="JobApplication" Sortable="true" HeaderText="Open">@context.IsActive</GridColumn>
+            <GridColumn TItem="JobApplication" Sortable="true" HeaderText="Status">@(GetStatus(context))</GridColumn>
         </GridColumns>
     </Grid>
 </div>
@@ -37,20 +37,34 @@
 
     private List<JobApplication> applications;
 
+    /// <summary>
+    /// Provide the table with application data
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns>List of the job applications</returns>
     private async Task<GridDataProviderResult<JobApplication>> DataProvider(GridDataProviderRequest<JobApplication> request)
     {
         if (applications is null) // pull employees only one time for client-side filtering, sorting, and paging
-            applications = DataSource.Get().OrderByDescending(o => o.LastModified).ToList(); // call a service or an API to pull the employees
+            applications = DataSource.Get().OrderByDescending(o => o.AppliedDate).ToList(); // call a service or an API to pull the employees
 
         return await Task.FromResult(request.ApplyTo(applications));
     }
 
+    /// <summary>
+    /// Navigate to application
+    /// </summary>
+    /// <param name="args">application clicked</param>
     private async Task OnRowClick(GridRowEventArgs<JobApplication> args)
     {
         var application = args.Item;
         Navigation.NavigateTo(Application.Route + application.Id);
     }
 
+    /// <summary>
+    /// Gets the date view for the applications
+    /// </summary>
+    /// <param name="appliedDate">date applied to job</param>
+    /// <returns>How long ago applied</returns>
     private string GetDate(DateTimeOffset appliedDate)
     {
         Period period = Period.Between(ZonedDateTime.FromDateTimeOffset(appliedDate).LocalDateTime,
@@ -60,5 +74,17 @@
         if (period.Years > 0) return $"{period.Years} years ago";
         if (period.Months > 0) return $"{period.Months} months ago";
         return $"{period.Days} days ago";
+    }
+
+    /// <summary>
+    /// Get the status of the application
+    /// </summary>
+    /// <param name="jobApplication">application</param>
+    /// <returns>current interview process status</returns>
+    private string GetStatus(JobApplication jobApplication)
+    {
+        if (!jobApplication.IsActive) return "Closed";
+        if (!String.IsNullOrWhiteSpace(jobApplication.Step)) return jobApplication.Step;
+        return "Resume Submitted";
     }
 }

@@ -18,13 +18,33 @@ else
     <div id="job-application">
         @if (activeSection == overviewTab)
         {
-            <div id="overview">
-                <h3>@JobApplication.Title</h3>
-                <h4>@JobApplication.Company</h4>
-                <h4>@JobApplication.Salary</h4>
-                <hr/>
-                <p>@((MarkupString)(JobApplication.JobDescription ?? ""))</p>
+            <div id="overview" class="row">
+                <div class="col">
+                    <h3>@JobApplication.Title</h3>
+                    <h4>@JobApplication.Company</h4>
+                    <h4>@JobApplication.Salary</h4>
+                </div>
+                <div class="col-3">
+                    <InputText  id="status"
+                                style="border:none;"
+                                @bind-Value="@JobApplication.Step" 
+                                placeholder="Resume Submitted"
+                                readonly="@isStepReadonly"
+                                @ondblclick="@(() => isStepReadonly = false)"
+                                @onblur="OnBlur_UpdateApplicationStep"/>
+                    <p/>            
+                    @if(!JobApplication.IsActive)
+                    {
+                        <h5>Closed</h5>
+                    }
+                    else
+                    {
+                        <Button Class="btn btn-outline-secondary" Disabled="@(!JobApplication.IsActive)" @onclick="OnClick_CloseApplication">Close</Button>
+                    }
+                </div>
             </div>            
+            <hr/>
+            <p>@((MarkupString)(JobApplication.JobDescription ?? ""))</p>
         }
         else
         {
@@ -33,12 +53,16 @@ else
             <hr />
             <JobHuntTracker.Components.Elements.Q_A 
                 InterviewQuestions="JobApplication.InterviewQuestions.Where(w => w.Section == activeSection).ToList()" 
-                Editing="isEditingQuestions"/>
+                Editing="isEditingQuestions"
+                OnBlur="OnBlur_UpdateQuestionAnswers"/>
         }
     </div>
 }
 
 @code {
+    /// <summary>
+    /// The identifier of the application to view
+    /// </summary>
     [Parameter]
     public string ApplicationId { get; set; }
 
@@ -49,6 +73,7 @@ else
 
     private bool isLoading = false;
     private bool isEditingQuestions = false;
+    private bool isStepReadonly = true;
     private JobApplication JobApplication = new();
     private const string overviewTab = "Overview";
     private string activeSection;
@@ -63,11 +88,19 @@ else
         }
     }
 
+    /// <summary>
+    /// Turn on/off edit mode of the interview questions' answers
+    /// </summary>
     private void OnClick_ToggleEditQuestions()
     {
         isEditingQuestions = !isEditingQuestions;
     }
 
+    /// <summary>
+    /// Add another question to the section
+    /// Note: specific to only this application
+    /// </summary>
+    /// <param name="newQuestion">new question</param>
     private void OnClick_AddNewQuestion(string newQuestion)
     {
         JobApplication.InterviewQuestions.Add(new InterviewQuestion()
@@ -82,4 +115,30 @@ else
         newQuestion = "";
     }
 
+    /// <summary>
+    /// Close application; no more interview process
+    /// </summary>
+    private void OnClick_CloseApplication()
+    {
+        JobApplication.IsActive = false;
+        JobApplication.LastModified = DateTimeOffset.Now;
+        DataSource.Upsert(JobApplication);
+    }
+
+    /// <summary>
+    /// Update the current applications step in the interview process
+    /// </summary>
+    private void OnBlur_UpdateApplicationStep()
+    {
+        DataSource.Upsert(JobApplication);
+        isStepReadonly = true;
+    }
+
+    /// <summary>
+    /// Save the answer to a question
+    /// </summary>
+    private void OnBlur_UpdateQuestionAnswers()
+    {
+        DataSource.Upsert(JobApplication);
+    }
 }

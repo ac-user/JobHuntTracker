@@ -1,20 +1,10 @@
-@import "../../wwwroot/css/Style.scss";
+#default-questions {
+    padding: 5px;
 
-#default-questions{
-    padding:5px;
-
-    #question-list {
-        padding: 5px;
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-
-        .bi-grip-vertical {
-            cursor: grab;
-
-            &:active {
-                cursor: grabbing;
-            }
+    ::deep .list-group {
+        
+        .list-group-item {
+            border: none;
         }
     }
 }

@@ -1,18 +1,24 @@
-﻿.card {
+﻿::deep .card {
   padding: 5px;
   cursor: pointer;
+}
+::deep .card:hover {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #00B3B3;
 }
 
 .nav-tabs {
-  border-bottom: 1px solid black;
+  border-bottom: 1px solid #009999;
   margin-bottom: 15px;
 }
 .nav-tabs li {
-  border: 1px solid black;
-  padding: 5px;
+  border: 1px solid #087878;
+  padding: 5px 10px;
   cursor: pointer;
 }
+.nav-tabs li:hover {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #00B3B3;
+}
 .nav-tabs li.active {
-  background-color: black;
+  background-color: #009999;
   color: white;
 }

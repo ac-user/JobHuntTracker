@@ -1,0 +1,168 @@
+﻿@using JobHuntTracker.Data
+@using JobHuntTracker.Models
+
+<BarChart @ref="barChart"/>
+
+@if(Interactive)
+{
+    <div class="mt-5">
+        <Button Type="ButtonType.Button" Color="ButtonColor.Primary" Size="ButtonSize.Small" @onclick="async () => await OnClick_RecentAsync()">
+            Recent 
+        </Button>
+        <Button Type="ButtonType.Button" Color="ButtonColor.Primary" Size="ButtonSize.Small" @onclick="async () => await OnClick_MonthlyAsync()">
+            Monthly
+        </Button>
+    </div>
+}
+
+@code {
+    /// <summary>
+    /// Interact with the chart
+    /// On by default
+    /// </summary>
+    [Parameter]
+    public bool Interactive { get; set; } = true;
+
+    private BarChart barChart = default!;
+    private BarChartOptions barChartOptions = default!;
+    private ChartData chartData = default!;
+
+    protected override void OnInitialized()
+    {
+        barChartOptions = new BarChartOptions 
+        { 
+            Responsive = true,
+            MaintainAspectRatio = false,
+            Interaction = new Interaction { Mode = InteractionMode.Index } 
+        };
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            chartData = GetRecentChartData();
+            await barChart.InitializeAsync(chartData, barChartOptions);
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    /// <summary>
+    /// Get the chart data based on the recent applications
+    /// </summary>
+    /// <returns>chart specific data</returns>
+    private ChartData GetRecentChartData()
+    {
+        var applications = GetJobApplicationsInLastMonths(1);
+        var datasets = new List<IChartDataset>();
+        var colors = BlazorExpress.ChartJS.ColorUtility.CategoricalTwelveColors;
+        var yAxisLabels = new List<string> { "This Week", "2 Weeks", "3 Weeks" };
+        var sites = applications.Select(s => s.SiteApplied).Distinct().ToList();
+
+        for(int i=0; i < sites.Count(); i++)
+        {
+            datasets.Add(new BarChartDataset()
+            {
+                Label = sites[i],
+                Data = new List<double?>
+                {
+                    applications.Where(w => sites[i] == w.SiteApplied && w.AppliedDate >= DateTimeOffset.Now.AddDays(-7)).Count(),
+                    applications.Where(w => sites[i] == w.SiteApplied &&
+                                       w.AppliedDate < DateTimeOffset.Now.AddDays(-7) &&
+                                       w.AppliedDate >= DateTimeOffset.Now.AddDays(-14)).Count(),
+                    applications.Where(w => sites[i] == w.SiteApplied &&
+                                       w.AppliedDate < DateTimeOffset.Now.AddDays(-14) &&
+                                       w.AppliedDate >= DateTimeOffset.Now.AddDays(-21)).Count(),
+                },
+                BackgroundColor = new List<string> { colors[i] },
+                BorderColor = new List<string> { colors[i] },
+                BorderWidth = new List<double> { 0 },
+            });
+        }
+
+        return new ChartData { Labels = yAxisLabels.Select(s => s).ToList(), Datasets = datasets };
+    }
+
+    /// <summary>
+    /// Get the chart data based on the applications in last three months
+    /// </summary>
+    /// <returns>chart specific data</returns>
+    private ChartData GetLastThreeMonthsChartData()
+    {
+        var applications = GetJobApplicationsInLastMonths(3);
+        var sites = applications.Select(s => s.SiteApplied).Distinct().ToList();
+
+        var datasets = new List<IChartDataset>();
+        var colors = BlazorExpress.ChartJS.ColorUtility.CategoricalTwelveColors;
+
+        var months = new List<string> { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+        var yAxisLabels = new List<string> { months[DateTime.Now.Month-1] };
+        if (DateTime.Now.Month == 1)
+        {//It's Jan
+            yAxisLabels.Insert(0, months[11]); //Dec
+            yAxisLabels.Insert(0, months[10]); //Nov
+        }
+        else if (DateTime.Now.Month == 2)
+        {//It's Feb
+            yAxisLabels.Insert(0, months[DateTime.Now.Month - 2]); //Jan
+            yAxisLabels.Insert(0, months[11]); //Dec
+        }
+        else
+        {//We are past March
+            yAxisLabels.Insert(0, months[DateTime.Now.Month - 2]);
+            yAxisLabels.Insert(0, months[DateTime.Now.Month - 3]);
+        }
+
+        for (int i = 0; i < sites.Count(); i++)
+        {
+            datasets.Add(new BarChartDataset()
+            {
+                Label = sites[i],
+                Data = new List<double?>
+                {
+                    applications.Where(w => sites[i] == w.SiteApplied && w.AppliedDate.Month == DateTimeOffset.Now.AddMonths(-2).Month).Count(),
+                    applications.Where(w => sites[i] == w.SiteApplied && w.AppliedDate.Month == DateTimeOffset.Now.AddMonths(-1).Month).Count(),
+                    applications.Where(w => sites[i] == w.SiteApplied && w.AppliedDate.Month == DateTimeOffset.Now.Month).Count(),
+                },
+                BackgroundColor = new List<string> { colors[i] },
+                BorderColor = new List<string> { colors[i] },
+                BorderWidth = new List<double> { 0 },
+            });
+        }
+        return new ChartData { Labels = yAxisLabels, Datasets = datasets };
+    }
+
+    private List<JobApplication> GetJobApplicationsInLastMonths(int months)
+    {
+        var applications = DataSource.Get().Where(w => w.AppliedDate.AddMonths(months) >= DateTimeOffset.Now).ToList();
+        foreach (var item in applications)
+        {
+            item.SiteApplied = item.SiteApplied?.Trim().ToLowerInvariant() switch
+            {
+                "indeed" => "Indeed",
+                "linkedin" => "LinkedIn",
+                _ => "Other"
+            };
+        }
+        return applications;
+    }
+
+    private async Task OnClick_RecentAsync()
+    {
+        if(!chartData.Labels.Contains("This Week"))
+        {//Not on recent view so get new recent chart data
+            chartData = GetRecentChartData();
+            await barChart.UpdateAsync(chartData, barChartOptions);
+        }
+    }
+
+    private async Task OnClick_MonthlyAsync()
+    {
+        if(chartData.Labels.Contains("This Week"))
+        {//We are on recent view so get monthly data
+            chartData = GetLastThreeMonthsChartData();
+            await barChart.UpdateAsync(chartData, barChartOptions);
+        }
+    }
+
+}

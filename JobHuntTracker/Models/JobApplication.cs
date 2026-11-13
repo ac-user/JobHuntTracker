@@ -17,6 +17,7 @@ namespace JobHuntTracker.Models
         [Required(ErrorMessage = "Site applied is required.")]
         public string SiteApplied { get; set; }
         public string Location { get; set; }
+        public string Step { get; set; }
         public bool IsRemote { get; set; }
         public DateTimeOffset AppliedDate { get; set; }
         public DateTimeOffset LastModified { get; set; }

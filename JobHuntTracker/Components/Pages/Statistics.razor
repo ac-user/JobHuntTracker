@@ -1,6 +1,18 @@
 ﻿@page "/statistics"
 <h3>Statistics</h3>
 
+<section id="statistics">
+    <div id="recruit-sites">
+        <JobHuntTracker.Components.Elements.RecruitementSite />
+    </div>
+    <div id="interview-progress-by-site">
+        <JobHuntTracker.Components.Elements.InterviewProgressChart />
+    </div>
+    <div id="applications-by-date">
+        <JobHuntTracker.Components.Elements.ApplicationsByDate />
+    </div>
+</section>
+
 @code {
 
     /// <summary>

@@ -1,5 +1,4 @@
-﻿@inject IJSRuntime JS
-@using JobHuntTracker.Data
+﻿@using JobHuntTracker.Data
 @using JobHuntTracker.Models
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Web
@@ -28,17 +27,16 @@
                         </p>
                     </div>
 
-                    <button type="button"
-                            class="btn-close"
+                    <Button Class="btn-close"
                             aria-label="Close"
                             @onclick="Cancel">
-                    </button>
+                    </Button>
                 </div>
 
                 <EditForm Model="@application" OnValidSubmit="Save">
                     <DataAnnotationsValidator />
-
                     <div class="modal-body">
+
                         <div class="row g-3">
 
                             <div class="col-12 col-md-6">
@@ -126,12 +124,16 @@
                                     <span class="text-danger">*</span>
                                 </label>
 
-                                <div id="jobDescription"
+                                <RichTextEditor Id="job-description"
+                                                Class="form-control rich-text-editor"
+                                                ToolbarItems="@toolbarItems"
+                                                Value="@application.JobDescription" />
+                                @* <div id="jobDescription"
                                      class="form-control rich-text-editor"
                                      contenteditable="true"
                                      @oninput="OnJobDescriptionInput">
                                     @((MarkupString)(application.JobDescription ?? ""))
-                                </div>
+                                </div> *@
 
                                 <ValidationMessage For="@(() => application.JobDescription)"
                                                    class="text-danger small" />
@@ -162,16 +164,32 @@
 }
 
 @code {
+    /// <summary>
+    /// Display the modal
+    /// </summary>
     [Parameter]
     public bool IsOpen { get; set; }
 
+    /// <summary>
+    /// Event to fire when saving new application
+    /// </summary>
     [Parameter]
     public EventCallback<JobApplication> OnSave { get; set; }
 
+    /// <summary>
+    /// Event to fire when canceling application creation
+    /// </summary>
     [Parameter]
     public EventCallback OnCancel { get; set; }
 
-    private IJSObjectReference? module;
+    private readonly RichTextEditorToolbarItem[] toolbarItems =
+    {
+        RichTextEditorToolbarItem.Heading2,
+        RichTextEditorToolbarItem.Bold,
+        RichTextEditorToolbarItem.Italic,
+        RichTextEditorToolbarItem.FontSize,
+        RichTextEditorToolbarItem.FontFamily
+    };
     private JobApplication application = new();
     private bool wasOpen;
 
@@ -189,24 +207,9 @@
         wasOpen = IsOpen;
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if(firstRender)
-        {
-            module = await JS.InvokeAsync<IJSObjectReference>("import", "./Components/Modules/NewApplication.razor.js");
-        }
-        await base.OnAfterRenderAsync(firstRender);
-    } 
-
-    private async Task OnJobDescriptionInput(ChangeEventArgs e)
-    {
-        application.JobDescription = await JS.InvokeAsync<string>("getEditorHtml", "jobDescription");
-    }
-
     /// <summary>
-    /// SAving the new application data
+    /// Saving the new application data
     /// </summary>
-    /// <returns></returns>
     private async Task Save()
     {
         var now = DateTimeOffset.Now;
@@ -220,6 +223,9 @@
         await OnSave.InvokeAsync(application);
     }
 
+    /// <summary>
+    /// Cancel what we were doing
+    /// </summary>
     private async Task Cancel()
     {
         await OnCancel.InvokeAsync();

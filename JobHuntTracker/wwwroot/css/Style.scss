@@ -1,4 +1,4 @@
-
+@import "Variables.scss";
 
 @mixin flexibleBox {
     display: flex;
@@ -7,12 +7,15 @@
     flex-wrap: wrap;
 }
 
-@mixin clickable{
-    cursor:pointer;
+@mixin clickable {
+    cursor: pointer;
+
+    &:hover {
+        box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem $secondary-color;
+    }
 }
 
-.card {
+::deep .card {
     padding: 5px;
-
     @include clickable;
 }

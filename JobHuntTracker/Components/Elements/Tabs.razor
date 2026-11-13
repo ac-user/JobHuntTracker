@@ -1,5 +1,5 @@
 ﻿
-<ul class="nav nav-tabs">
+<ul class="nav nav-tabs" tabindex="2">
     @foreach (var sectionName in sections)
     {
         <li class="nav-item @(ActiveTab == sectionName ? "active" : "")"
@@ -8,10 +8,21 @@
 </ul>
 
 @code {
+    /// <summary>
+    /// Event to fire when another tab is clicked
+    /// </summary>
     [Parameter]
     public EventCallback<string> ActiveTabChanged { get; set; }
+
+    /// <summary>
+    /// Show the overview tab
+    /// </summary>
     [Parameter]
     public bool ShowOverview { get; set; }
+
+    /// <summary>
+    /// The current active tab
+    /// </summary>
     [Parameter]
     public string ActiveTab { get; set; }
 
@@ -32,7 +43,6 @@
     /// Update the tab selection
     /// </summary>
     /// <param name="sectionName">new selection</param>
-    /// <returns></returns>
     private async Task OnClick_Section(string sectionName)
     {
         if (sectionName != ActiveTab)
